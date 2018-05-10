@@ -24,7 +24,7 @@ connectMongoDb = function(db){
 callApi = function(jsonBody){
   url  <- "http://localhost:8999"
   path <- "sum"
-  post_result <- POST(url="http://localhost:8999/sum",body=jsonBody,add_headers(.headers = c("Content-Type"="application/json")))
+  post_result <- POST(url="http://localhost:8999/sum",body=jsonBody,add_headers(.headers = c("Content-Type"="application/json","username"="1345")))
   
   Output <- content(post_result)
   return(Output)
