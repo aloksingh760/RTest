@@ -4,31 +4,26 @@ library(stringi)
 library(jsonlite)
 library(httr)
 
-#* Return the value of a custom header
+# function will return response of sum
 #' @post /sum
 sumTest <- function(req,res) {
-  
+  #fetching header value
   val=''
   list(
     val<-req$HTTP_USERNAME
-    #coockie<-req$cookies
+    
     
   )
-  
-  
+  # parsing reqest body to dataframe 
   document<- fromJSON(req$postBody)
   asFrame <- as.data.frame(document)
-  #print(asFrame)
   
-  count <- 0
-  if (!is.null(req$session$counter)){
-    count <- as.numeric(req$session$counter)
-  }
-  req$session$counter <- count + 1
-  print("# of visits")
-  print(count) 
+  # validate header
   if(as.character(val)==as.character("12345")){
-    return(sumColumn(asFrame,"documents.ItemModList"))
+    outputFromSumMethod<-sumColumn(asFrame,"documents.ItemModList")
+    outputToJson<- toJSON(outputFromSumMethod,auto_unbox = TRUE,pretty = TRUE)
+    print(outputToJson)
+    return(outputToJson)
   }else{
     res$status<- 400 #Bad Request
     return(list(error="Missing Required Parameters."))
@@ -40,22 +35,24 @@ sumTest <- function(req,res) {
 
 sumColumn <- function(df, Col_name) {
   
-  # check if first input argument is not a data frame
-  if(!is.data.frame(df))
-    stop ('output_error2: Non dataframe supplied as df')
   
-  # check if second input argument is not numeric
-  #Col_name=as.name(Col_name)
+  
+  result = tryCatch({
+    
+   #check if first input argument is not a data frame
+  if(!is.data.frame(df))
+    outputList<-list("output_code"="output_error_2","output_error"="Non dataframe supplied as df")
+  
+  #check if second input argument is not numeric
   if(!is.numeric(df[[Col_name]]))
-    stop('output_error1: Non numeric column supplied')
+    outputList<-list("output_code"="output_error_1","output_error"="Non numeric column supplied")
   
   #fetch all values from specified colum in second argument
   column_values= df[Col_name]
+  outputList<-list("output_code"="output_success_0","total sum"=colSums(column_values))
   
-  result = tryCatch({
-    colSums(column_values)
   }, error = function(e) {
-    stop("output_error3: any other error")
+    outputList<-list("output_code"="output_error_3","output_error"="any other error")
   })
   return (result)
 }
